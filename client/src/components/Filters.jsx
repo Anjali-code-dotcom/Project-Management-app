@@ -5,7 +5,7 @@ const Filters = ({ setFilteredTickets }) => {
   const [priority, setPriority] = useState("");
   const [assignee, setAssignee] = useState("");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ FIXED
+  const [loading, setLoading] = useState(false); 
 
   useEffect(() => {
     const fetchFiltered = async () => {
@@ -19,13 +19,13 @@ const Filters = ({ setFilteredTickets }) => {
         if (assignee) params.append("assignee", assignee);
         if (search) params.append("search", search);
 
-        const token = localStorage.getItem("token"); // ✅ IMPORTANT
+        const token = localStorage.getItem("token"); 
 
         const res = await fetch(
           `http://localhost:5000/api/tickets?${params.toString()}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // ✅ FIX 401
+              Authorization: `Bearer ${token}`, 
             },
           }
         );
@@ -35,12 +35,12 @@ const Filters = ({ setFilteredTickets }) => {
       } catch (err) {
         console.error("Filter API error:", err);
       } finally {
-        setLoading(false); // ✅ FIXED
+        setLoading(false); 
       }
     };
 
     fetchFiltered();
-  }, [status, priority, assignee, search]);
+  }, [status, priority, assignee, search, setFilteredTickets]);
 
   return (
     <div className="w-full bg-white shadow-md rounded-2xl p-4 mb-5">
