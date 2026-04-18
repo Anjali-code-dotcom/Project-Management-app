@@ -1,52 +1,40 @@
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+
 require("dotenv").config();
-const express = require("express"); 
-const mongoose = require("mongoose");
+const express = require("express");
 const cors = require("cors");
 
-const app = express();
+const connectDB = require("./config/db");
 
-// 📁 Routes
-const projectRoutes = require("./routes/projectRoutes");
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const ticketRoutes = require("./routes/ticketRoutes");
+const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  credentials: true
+}));
 
-// 🔗 API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/projects", projectRoutes);
-app.use("/api/tickets", ticketRoutes);
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/projects", require("./routes/projectRoutes"));
+app.use("/api/tickets", require("./routes/ticketRoutes"));
 
-// Test Route
+// Test route
 app.get("/", (_req, res) => {
   res.send("API Running...");
 });
 
-// Debug Headers (optional)
-app.use((req, _res, next) => {
-  console.log("HEADERS:", req.headers);
-  next();
-});
-
-
+// Start server
 const startServer = async () => {
-  try {
-   
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB Connected");
+  await connectDB();
 
-   app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-  } catch (error) {
-    console.error("❌ Server Error:", error.message);
-    process.exit(1);
-  }
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 };
 
 startServer();
