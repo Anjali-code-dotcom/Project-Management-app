@@ -37,7 +37,7 @@ function Register() {
     setSuccess("");
 
     try {
-      const res = await API.post("/auth/register", {
+      const res = await API.post("http://localhost:5000/api/auth/register", {
         name,
         email,
         password,
@@ -54,7 +54,8 @@ function Register() {
 
     } catch (err) {
       console.log("REGISTER ERROR:", err.response?.data);
-
+console.log("ERROR FULL:", err);                  
+  console.log("ERROR DATA:", err.response?.data);
       setError(
         err.response?.data?.message || "Registration failed"
       );

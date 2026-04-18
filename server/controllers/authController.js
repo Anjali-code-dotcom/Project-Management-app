@@ -1,5 +1,3 @@
-// routes/auth.js
-
 const express = require("express");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
@@ -27,8 +25,10 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "All fields required" });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // check existing user
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -39,11 +39,11 @@ router.post("/register", async (req, res) => {
     // create user
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail, // ✅ FIXED
       password: hashedPassword,
       role: "user",
     });
-
+     console.log(form);
     res.status(201).json({
       message: "User registered successfully",
     });
@@ -61,39 +61,35 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-
+    // 1. check user exists
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found" });
     }
 
+    // 2. compare password correctly
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
-    const token = generateToken(user);
+    // 3. generate token
+    const token = jwt.sign(
+      { id: user._id },
+      "secretkey",
+      { expiresIn: "1d" }
+    );
 
     res.json({
       message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      token
     });
 
-  } catch (error) {
-    console.log("LOGIN ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
+
 
 module.exports = router;
